@@ -1,0 +1,8 @@
+{
+  "name": "iterate",
+  "version": "1.0.0",
+  "description": "A module that exports an iterator over object properties",
+  "main": "iterate.mjs",
+  "type": "module",
+  "author": "Vojtěch Fiala"
+}
