@@ -4,5 +4,8 @@
   "description": "A module that exports an iterator over object properties",
   "main": "iterate.mjs",
   "type": "module",
-  "author": "Vojtěch Fiala"
+  "author": "Vojtěch Fiala",
+  "dependencies": {
+    "jsdoc": "^4.0.2"
+  }
 }
