@@ -1,5 +1,5 @@
 /**
- * A module that exports the iterateProperties generator as a part of the WAP project 1
+ * A module that exports the iterateProperties generator as a part of WAP project 1
  * @module iterate
  * @author Vojtěch Fiala
  */
@@ -18,23 +18,23 @@ function getPrototypeList(object) {
         object = Object.getPrototypeOf(object); // get the object's prototype
     }
 
-    // reverse the array so that the highest level is at the start
+    // reverse the array so that the (null) level is at the start
     obj_arr = obj_arr.reverse()
     return obj_arr
 }
 
 /**
- * A callback function for the filter() function
- * @param {string} prop The name of the property which is being filtered 
+ * A callback function for the filter() function. Filters the unwanted data out. In case the descriptor is not defined, it filters the property out.
+ * @param {object} prop The property descriptor which is being filtered 
  * @returns {boolean} Boolean value upon which depends if the value should be filtered out
  */
-function applyFilter(prop) {
+function applyFilter(desc) {
     // go through all parts of the filter, because of the nature of the callback func, is accessed through `this`
     for (let part in this.filter) {
         // get all the filterable values in the given object's property
-        let settings = Object.getOwnPropertyDescriptor(this.object, prop);
+        let settings = Object.getOwnPropertyDescriptor(this.object, desc);
         // undefined means i don't use them in the filter
-        if (settings[part] == undefined) {
+        if (settings[part] === undefined) {
             return false;
         }
         if (settings[part] !== this.filter[part]) {
@@ -59,7 +59,7 @@ export function* iterateProperties(object, filter=undefined) {
         let props;
 
         // get the properties of an object and filter them according to the user filter (if given)
-        if (filter != undefined) {
+        if (filter !== undefined) {
             // second parameter values can be accessed using `this`, so I'll use both things I want there
             props = Object.getOwnPropertyNames(object).filter(applyFilter, {filter: filter, object: object});
         }

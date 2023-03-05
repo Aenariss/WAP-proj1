@@ -1,0 +1,70 @@
+>>>>>>>>>> Ukázka 1
+constructor
+__defineGetter__
+__defineSetter__
+hasOwnProperty
+__lookupGetter__
+__lookupSetter__
+isPrototypeOf
+propertyIsEnumerable
+toString
+valueOf
+__proto__
+toLocaleString
+>>>>>>>>>> Ukázka 2
+constructor
+__defineGetter__
+__defineSetter__
+hasOwnProperty
+__lookupGetter__
+__lookupSetter__
+isPrototypeOf
+propertyIsEnumerable
+toString
+valueOf
+__proto__
+toLocaleString
+a
+b
+c
+>>>>>>>>>> Ukázka 3
+constructor
+__defineGetter__
+__defineSetter__
+hasOwnProperty
+__lookupGetter__
+__lookupSetter__
+isPrototypeOf
+propertyIsEnumerable
+toString
+valueOf
+__proto__
+toLocaleString
+a
+b
+c
+a
+>>>>>>>>>> Ukázka 4
+a
+b
+c
+a
+>>>>>>>>>> Ukázka 5
+a
+>>>>>>>>>> Ukázka 6 (mix)
+a
+b
+a
+c
+b
+c
+>>>>>>>>>> Ukázka 7 (konstruktor)
+x
+y
+x
+y
+>>>>>>>>>> Ukázka 8 (třídy)
+x
+y
+z
+navíc

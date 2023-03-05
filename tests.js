@@ -1,5 +1,5 @@
 /**
- * File that contains all the tests to test the functionality of the iterate.mjs module.
+ * Tests for the `iterate.mjs` module
  */
 
 import { iterateProperties } from "./iterate.mjs";
@@ -9,7 +9,7 @@ var totalPass = 0;
 var totalFail = 0;
 
 /**
- * print final results
+ * print results of a test suite
  */
 function printResults(name, pass, fail) {
     if (name !== "ALL TOGETHER") {
@@ -43,8 +43,8 @@ function printTest(name, inp, out) {
         passed = "✗"
         res = 0
     }
-    // dont spam the stdout with very long outputs if correct
-    if ((inp.length == out.length) && out.length > 30)
+    // dont spam the stdout with very long outputs if both correct
+    if ((inp.length === out.length) && out.length > 30 && res === 1)
         console.log(name + ':', passed)
     else
         console.log(name + ':', inp, '|',  out, passed)
@@ -52,7 +52,7 @@ function printTest(name, inp, out) {
 }
 
 /**
- * get the output of the generator
+ * get the output of the generator and return it as a string
  */
 function getOutput(generator) {
     let res = ""
@@ -63,25 +63,30 @@ function getOutput(generator) {
 }
 
 /**
- * basic tests
+ * basic tests focusing on basic functionality
  */
 function basicFunctionality() {
     printBeginning("BASIC FUNCTIONALITY TESTS")
     let pass = 0
     let res1 = getOutput(iterateProperties(Object.prototype))
-    pass += printTest("Object Prototype returns something", res1, " constructor __defineGetter__ __defineSetter__ hasOwnProperty __lookupGetter__ __lookupSetter__ isPrototypeOf propertyIsEnumerable toString valueOf __proto__ toLocaleString")
+    // Object.Prototype returns correct functions
+    pass += printTest("Object Prototype returns something >", res1, " constructor __defineGetter__ __defineSetter__ hasOwnProperty __lookupGetter__ __lookupSetter__ isPrototypeOf propertyIsEnumerable toString valueOf __proto__ toLocaleString")
 
     let res2 = getOutput(iterateProperties({}))
-    pass += printTest("Empty {} returns something", res2, " constructor __defineGetter__ __defineSetter__ hasOwnProperty __lookupGetter__ __lookupSetter__ isPrototypeOf propertyIsEnumerable toString valueOf __proto__ toLocaleString")
+    // {} returns correct functions
+    pass += printTest("Empty {} returns object.prototype >", res2, " constructor __defineGetter__ __defineSetter__ hasOwnProperty __lookupGetter__ __lookupSetter__ isPrototypeOf propertyIsEnumerable toString valueOf __proto__ toLocaleString")
 
     let res3 = getOutput(iterateProperties())
-    pass += printTest("Empty {} returns something", res3, "")
+    // no argument doesnt return anything
+    pass += printTest("Empty {} returns object.prototype >", res3, "")
 
     let res4 = getOutput(iterateProperties({x: 1}))
-    pass += printTest("Object Prototype & 1 custom", res4, " constructor __defineGetter__ __defineSetter__ hasOwnProperty __lookupGetter__ __lookupSetter__ isPrototypeOf propertyIsEnumerable toString valueOf __proto__ toLocaleString x")
+    // defined value of `x` returns Object.prototype and x
+    pass += printTest("Object Prototype & 1 custom value >", res4, " constructor __defineGetter__ __defineSetter__ hasOwnProperty __lookupGetter__ __lookupSetter__ isPrototypeOf propertyIsEnumerable toString valueOf __proto__ toLocaleString x")
 
     let res5 = getOutput(iterateProperties({x: 1, y: 5}))
-    pass += printTest("Object Prototype & 2 custom", res5, " constructor __defineGetter__ __defineSetter__ hasOwnProperty __lookupGetter__ __lookupSetter__ isPrototypeOf propertyIsEnumerable toString valueOf __proto__ toLocaleString x y")
+    // defined value of `x` returns Object.prototype and x & y
+    pass += printTest("Object Prototype & 2 custom values >", res5, " constructor __defineGetter__ __defineSetter__ hasOwnProperty __lookupGetter__ __lookupSetter__ isPrototypeOf propertyIsEnumerable toString valueOf __proto__ toLocaleString x y")
 
     let fail = 5 - pass
     printResults("BASIC FUNCTIONALITY TESTS", pass, fail)
@@ -94,39 +99,44 @@ function editingProperties() {
     printBeginning("PROPERTIES FUNCTIONALITY TESTS")
     let pass = 0
     
+    // define an object for this suite
     let z = Object.create({x: 1})
+    // redefine a value
     Object.defineProperty(z, "x", {
         configurable: false,
         writable: true
     });
 
     let res1 = getOutput(iterateProperties(z))
-    pass += printTest("Object Prototype & 1 custom definedProperty", res1, " constructor __defineGetter__ __defineSetter__ hasOwnProperty __lookupGetter__ __lookupSetter__ isPrototypeOf propertyIsEnumerable toString valueOf __proto__ toLocaleString x x")
+    // when a value was redefined, it should show up 2 times (orig & new)
+    pass += printTest("Object Prototype & 1 custom redefinedProperty >", res1, " constructor __defineGetter__ __defineSetter__ hasOwnProperty __lookupGetter__ __lookupSetter__ isPrototypeOf propertyIsEnumerable toString valueOf __proto__ toLocaleString x x")
 
     Object.defineProperty(z, "y", {
         configurable: false,
         writable: false
     });
     let res2 = getOutput(iterateProperties(z))
-    pass += printTest("Object Prototype & 2 custom definedProperty", res2, " constructor __defineGetter__ __defineSetter__ hasOwnProperty __lookupGetter__ __lookupSetter__ isPrototypeOf propertyIsEnumerable toString valueOf __proto__ toLocaleString x x y")
+    // new y should also show up
+    pass += printTest("Object Prototype & 2 custom definedProperty >", res2, " constructor __defineGetter__ __defineSetter__ hasOwnProperty __lookupGetter__ __lookupSetter__ isPrototypeOf propertyIsEnumerable toString valueOf __proto__ toLocaleString x x y")
 
 
     let res3 = getOutput(iterateProperties(z, {configurable: false}))
-    pass += printTest("writable custom", res3, " x y")
+    pass += printTest("Writable descriptor filter >", res3, " x y")
 
     let res4 = getOutput(iterateProperties(z, {writable: false}))
-    pass += printTest("configurable custom", res4, " y")
+    pass += printTest("Configurable descriptor filter >", res4, " y")
 
+    // check if the .next() works as it should (it.s a generator after all)
     let iterator1 = iterateProperties({x: 1, y: 5}, {enumerable: true})
     let iterator2 = iterateProperties({y: 1, x: 1}, {enumerable: true})
     let res5 = iterator1.next().value
-    pass += printTest("Two instances - inst one - 1", res5, "x")
+    pass += printTest("Two instances - inst one - 1 >", res5, "x")
     let res6 = iterator2.next().value
-    pass += printTest("Two instances - inst two - 1", res6, "y")
+    pass += printTest("Two instances - inst two - 1 >", res6, "y")
     let res7 = iterator2.next().value
-    pass += printTest("Two instances - inst two - 2", res7, "x")
+    pass += printTest("Two instances - inst two - 2 >", res7, "x")
     let res8 = iterator1.next().value
-    pass += printTest("Two instances - inst one - 2", res8, "y")
+    pass += printTest("Two instances - inst one - 2 >", res8, "y")
     
 
     let fail = 8 - pass
@@ -149,22 +159,32 @@ function advancedProperties() {
     })
 
     let res1 = getOutput(iterateProperties(z, {writable: false}))
-    pass += printTest("unwritable", res1, " x")
+    // custom search - filter by writable: false 
+    pass += printTest("Unwritable >", res1, " x")
 
+    // custom search by value
     let res2 = getOutput(iterateProperties(z, {value: 5}))
-    pass += printTest("value-5", res2, " x")
+    pass += printTest("Value-5 >", res2, " x")
 
     let res3 = getOutput(iterateProperties({}, {writable: true}))
-    pass += printTest("writable Object prototype", res3, " constructor __defineGetter__ __defineSetter__ hasOwnProperty __lookupGetter__ __lookupSetter__ isPrototypeOf propertyIsEnumerable toString valueOf toLocaleString")
+    pass += printTest("Writable Object prototype >", res3, " constructor __defineGetter__ __defineSetter__ hasOwnProperty __lookupGetter__ __lookupSetter__ isPrototypeOf propertyIsEnumerable toString valueOf toLocaleString")
 
     let res4 = getOutput(iterateProperties({}, {configurable: false}))
-    pass += printTest("unconfigurable Object Prototype", res4, "")
+    pass += printTest("Unconfigurable Object Prototype >", res4, "")
 
+    // empty custom filter acts as if there was none at all
     let res5 = getOutput(iterateProperties({x: 1}, {}))
-    pass += printTest("empty filter ", res5, " constructor __defineGetter__ __defineSetter__ hasOwnProperty __lookupGetter__ __lookupSetter__ isPrototypeOf propertyIsEnumerable toString valueOf __proto__ toLocaleString x")
+    pass += printTest("Empty filter >", res5, " constructor __defineGetter__ __defineSetter__ hasOwnProperty __lookupGetter__ __lookupSetter__ isPrototypeOf propertyIsEnumerable toString valueOf __proto__ toLocaleString x")
 
+    // search by a descriptor that doesnt exist should return nothing (cuz nothing matches)
+    let res6 = getOutput(iterateProperties({}, {something_new: true}))
+    pass += printTest("Undefined property descriptor >", res6, "")
 
-    let fail = 5 - pass
+    // search by a descriptor that doesnt exist and something that exists should return nothing (cuz nothing matches the first one)
+    let res7 = getOutput(iterateProperties({}, {something_new: true, writable: false}))
+    pass += printTest("Undefined property descriptor & defined desc at the same time >", res7, "")
+
+    let fail = 7 - pass
     printResults("ADVANCED PROPERTIES FUNCTIONALITY TESTS", pass, fail)
 }
 
@@ -175,14 +195,15 @@ function multipleFilters() {
     printBeginning("MULTIPLE FILTERS TESTS")
     let pass = 0
 
+    // multiple descriptors in custom filter at once (both valid) should return those that fulfill
     let res1 = getOutput(iterateProperties({}, {writable: true, enumerable: false}))
-    pass += printTest("{} - writable & not enumerable", res1, " constructor __defineGetter__ __defineSetter__ hasOwnProperty __lookupGetter__ __lookupSetter__ isPrototypeOf propertyIsEnumerable toString valueOf toLocaleString")
+    pass += printTest("{} - filter writable & not enumerable >", res1, " constructor __defineGetter__ __defineSetter__ hasOwnProperty __lookupGetter__ __lookupSetter__ isPrototypeOf propertyIsEnumerable toString valueOf toLocaleString")
 
     let res2 = getOutput(iterateProperties({}, {writable: true, enumerable: false, configurable: false}))
-    pass += printTest("{} - writable & not enumerable & not ocnfigurable", res2, "")
+    pass += printTest("{} - filter writable & not enumerable & not ocnfigurable >", res2, "")
 
     let res3 = getOutput(iterateProperties({}, {writable: true, enumerable: false, configurable: true}))
-    pass += printTest("{} - writable & not enumerable & ocnfigurable", res3, " constructor __defineGetter__ __defineSetter__ hasOwnProperty __lookupGetter__ __lookupSetter__ isPrototypeOf propertyIsEnumerable toString valueOf toLocaleString")
+    pass += printTest("{} - filter writable & not enumerable & ocnfigurable >", res3, " constructor __defineGetter__ __defineSetter__ hasOwnProperty __lookupGetter__ __lookupSetter__ isPrototypeOf propertyIsEnumerable toString valueOf toLocaleString")
 
 
     let z = {}
@@ -200,15 +221,18 @@ function multipleFilters() {
     });
 
     let res4 = getOutput(iterateProperties(z, {writable: true, enumerable: false, configurable: false}))
-    pass += printTest("2 custom properties multiple filters", res4, " x y")
+    pass += printTest("2 custom properties multiple filters >", res4, " x y")
 
     let res5 = getOutput(iterateProperties(z, {enumerable: false, value: 5}))
-    pass += printTest("not enumerable & value", res5, " x y")
+    pass += printTest("Not enumerable & value filters >", res5, " x y")
 
     let fail = 5 - pass
     printResults("MULTIPLE FILTERS TESTS", pass, fail)
 }
 
+/**
+ * Tests focusing on advanced constructs (prototype of a function & class)
+ */
 function advancedConstructs() {
     printBeginning("ADVANCED CONSTRUCTS TESTS")
     let pass = 0
@@ -220,18 +244,20 @@ function advancedConstructs() {
         val: 5,
     }
 
+    // function has a prototype which defines `val` and therefore there should `val` 2 times
     let res1 = getOutput(iterateProperties(new smth(4), {enumerable: true}))
-    pass += printTest("function & prototype", res1, " val val")
+    pass += printTest("Function & prototype >", res1, " val val")
 
     function smth2(x) {
         this.val = x;
     }
 
+    // function without an explicit prottype should only have 1 `val`
     let res2 = getOutput(iterateProperties(new smth2(4), {enumerable: true}))
-    pass += printTest("function & prototype 2", res2, " val")
+    pass += printTest("Function & prototype 2 >", res2, " val")
 
     let res3 = getOutput(iterateProperties(new smth2(4)))
-    pass += printTest("function & prototype 3", res3, " constructor __defineGetter__ __defineSetter__ hasOwnProperty __lookupGetter__ __lookupSetter__ isPrototypeOf propertyIsEnumerable toString valueOf __proto__ toLocaleString constructor val")
+    pass += printTest("Function & prototype 3 >", res3, " constructor __defineGetter__ __defineSetter__ hasOwnProperty __lookupGetter__ __lookupSetter__ isPrototypeOf propertyIsEnumerable toString valueOf __proto__ toLocaleString constructor val")
 
     class smthClass {
         x;
@@ -242,24 +268,28 @@ function advancedConstructs() {
         }
     }
 
+    // members of class should show up
     let res4 = getOutput(iterateProperties(new smthClass(1,2), {enumerable: true}))
-    pass += printTest("class 1", res4, " x y")
+    pass += printTest("Class 1 >", res4, " x y")
 
+    // members of class when constructor doesnt have enough values - they shoudl still show up
     let res5 = getOutput(iterateProperties(new smthClass(), {enumerable: true}))
-    pass += printTest("class empty constr 1", res5, " x y")
+    pass += printTest("Constructor without parameters >", res5, " x y")
 
     class smth2Class {
         x;
     }
 
+    // class without explicit constructor should still show member
     let res6 = getOutput(iterateProperties(new smth2Class(), {enumerable: true}))
-    pass += printTest("class empty constr 2", res6, " x")
+    pass += printTest("No constructor >", res6, " x")
 
 
     let fail = 6 - pass
     printResults("ADVANCED CONSTRUCTS TESTS", pass, fail)
 }
 
+// launch all the tests
 basicFunctionality()
 editingProperties()
 advancedProperties()
